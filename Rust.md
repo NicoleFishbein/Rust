@@ -77,7 +77,8 @@ Once everything is set up, you can build your project for the specific target us
 - For **Linux**:
 
   ```bash
-  cargo build --target x86_64-unknown-linux-gnu
+  export CC=x86_64-linux-musl-gcc
+  RUSTFLAGS="-C linker=x86_64-linux-musl-gcc" cargo build --target x86_64-unknown-linux-musl
   ```
 
 - For **Windows**:
