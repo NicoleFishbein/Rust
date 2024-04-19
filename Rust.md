@@ -1,5 +1,23 @@
 # Rust
 
+## Strings
+
+String Literals Are Immutable: In Rust, string literals like "test" are of type &str (a string slice), which is inherently immutable. This means that even though you can change which string slice my_string points to, you cannot change the content of the string slice itself.
+
+Mutable Binding vs Mutable Data: Declaring my_string with mut allows you to rebind my_string to point to a different string slice, but it does not allow you to modify the contents of "test". For example:
+
+```rust
+let mut my_string = "test";  // my_string can be rebound, but "test" cannot be altered
+my_string = "another test";  // Valid: rebinding to another &str
+```
+
+For Mutable String Data: If you need a mutable string that you can change (e.g., append text, modify characters), you should use String instead of &str:
+
+```rust
+let mut my_string = String::from("test");  // Now my_string is a mutable String
+my_string.push_str("ing");                 // Valid: modifies the String to "testing"
+```
+
 ## Cross Compilation
 
 Cross-compiling Rust programs for different platforms and architectures from an Apple M1 (ARM architecture) machine involves a few steps. You'll need to install the appropriate target architectures in Rust, set up cross-compilers, and possibly deal with some external dependencies.
@@ -133,7 +151,7 @@ fn calculate_length(s: &String) -> usize {
 ```
 
 The scope in which the variable s is valid is the same as any function parameter’s scope, but the value pointed to by the reference is not dropped when s stops being used, because s doesn’t have ownership.
-We call the action of creating a reference borrowing. 
+We call the action of creating a reference borrowing.
 
 This will not compile. Because it tries to return a reference to a String that is deallocated when the dangle function finishes executing. This is a fundamental violation of Rust's ownership rules, specifically related to its lifetime handling.
 
@@ -151,9 +169,9 @@ fn dangle() -> &String {
 
 Possible fixes:
 
-* Change the function to return the String directly, not a reference. This transfers ownership out of the function, ensuring the String's data remains valid.
+- Change the function to return the String directly, not a reference. This transfers ownership out of the function, ensuring the String's data remains valid.
 
-* If you must return a reference for some reason, you'll need to ensure that the String lives longer than the function call. This typically involves changing your approach, perhaps using lifetimes in a different way or restructuring your code to avoid the need for returning a reference to a locally created String.
+- If you must return a reference for some reason, you'll need to ensure that the String lives longer than the function call. This typically involves changing your approach, perhaps using lifetimes in a different way or restructuring your code to avoid the need for returning a reference to a locally created String.
 
 ```rust
 fn main() {
@@ -214,8 +232,8 @@ We also cannot have a mutable reference while we have an immutable one to the sa
 
 ### The Rules of References
 
-* At any given time, you can have either one mutable reference or any number of immutable references.
-* References must always be valid.
+- At any given time, you can have either one mutable reference or any number of immutable references.
+- References must always be valid.
 
 ## Structs
 
@@ -234,7 +252,7 @@ fn main() {
 }
 ```
 
-* Note that the struct update syntax uses = like an assignment; this is because it moves the data, just as we saw in the “Variables and Data Interacting with Move” section. In this example, we can no longer use user1 as a whole after creating user2 because the String in the username field of user1 was moved into user2. If we had given user2 new String values for both email and username, and thus only used the active and sign_in_count values from user1, then user1 would still be valid after creating user2. Both active and sign_in_count are types that implement the Copy trait, so the behavior we discussed in the “Stack-Only Data: Copy” section would apply.
+- Note that the struct update syntax uses = like an assignment; this is because it moves the data, just as we saw in the “Variables and Data Interacting with Move” section. In this example, we can no longer use user1 as a whole after creating user2 because the String in the username field of user1 was moved into user2. If we had given user2 new String values for both email and username, and thus only used the active and sign_in_count values from user1, then user1 would still be valid after creating user2. Both active and sign_in_count are types that implement the Copy trait, so the behavior we discussed in the “Stack-Only Data: Copy” section would apply.
 
 ### Ownership of Struct Data
 
@@ -371,3 +389,100 @@ We can put data directly into each enum variant. We attach data to each variant 
 `IpAddr::V4()` is a function call that takes a String argument and returns an instance of the `IpAddr` type. We automatically get this constructor function defined as a result of defining the enum.
 
 There’s another advantage to using an enum rather than a struct: each variant can have different types and amounts of associated data.
+
+```rust
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+```
+
+The `Option` type encodes the very common scenario in which a value could be something or it could be nothing.
+
+```rust
+enum Option<T> {
+    None,
+    Some(T),
+}
+```
+
+### The Match Control Flow
+
+It can evaluate any type, unlike `if` that can handle only booleans.
+The arms’ patterns must cover all possibilities.
+
+Below there are 4 arms: An arm has two parts: a pattern and some code. The first arm here has a pattern that is the value `Coin::Penny` and then the `=>` operator that separates the pattern and the code to run.
+
+```rust
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter,
+}
+
+fn value_in_cents(coin: Coin) -> u8 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter => 25,
+    }
+}
+```
+And there is a catch-all:
+
+```rust
+    let dice_roll = 9;
+    match dice_roll {
+        3 => add_fancy_hat(),
+        7 => remove_fancy_hat(),
+        other => move_player(other),
+    }
+
+    fn add_fancy_hat() {}
+    fn remove_fancy_hat() {}
+    fn move_player(num_spaces: u8) {}
+```
+
+Rust also has a pattern we can use when we want a catch-all but don’t want to use the value in the catch-all pattern: `_` is a special pattern that matches any value and does not bind to that value.
+
+```rust
+    let dice_roll = 9;
+    match dice_roll {
+        3 => add_fancy_hat(),
+        7 => remove_fancy_hat(),
+        _ => reroll(),
+    }
+
+    fn add_fancy_hat() {}
+    fn remove_fancy_hat() {}
+    fn reroll() {}
+```
+
+#### Control Flow With If Let
+
+Option<u8> value in the config_max variable but only wants to execute code if the value is the Some variant.
+
+```rust
+    let config_max = Some(3u8);
+    match config_max {
+        Some(max) => println!("The maximum is configured to be {}", max),
+        _ => (),
+    }
+```
+
+Instead, we could write this in a shorter way using `if let`:
+
+```rust
+    let config_max = Some(3u8);
+    if let Some(max) = config_max {
+        println!("The maximum is configured to be {}", max);
+    }
+```
+
+The pattern is `Some(max)`, and the `max` binds to the value inside the `Some`. We can then use `max` in the body of the if let block in the same way we used max in the corresponding `match` arm. The code in the if let block isn’t run if the value doesn’t match the pattern.
+
+
