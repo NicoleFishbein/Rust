@@ -1,14 +1,15 @@
 fn main(){
-    let s1 = String::from("Hello");
-    let s2 = "World!";
+    let mut s = String::with_capacity(50);
 
-    println!("{}", std::mem::size_of_val(&s1)); // Prints 24 = 3x8
-    println!("{}", s1.len());      // Prints 5, the size of the String
-    println!("{}", s1.capacity()); // Prints 5, the capacity of the String
-    println!("{:p}", &s1); // 0x7fff58ffb178, the address in the stack
-    println!("{:p}", s1.as_ptr()); // 0x5f373059dba0, the address in the heap
+    s.push_str("Hello");
+    s.push_str(" World");
 
-    println!("Immutable: {}", s2);
+    println!("String: {}", s);
+    println!("Length: {}", s.len());         // Outputs the current length of the string
+    println!("Capacity: {}", s.capacity());
+
+    let s2 = "Immutable";
+    println!("BlaBla {}", s2);
 }
 
 
